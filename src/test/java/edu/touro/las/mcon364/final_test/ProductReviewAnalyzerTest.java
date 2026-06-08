@@ -2,10 +2,7 @@ package edu.touro.las.mcon364.final_test;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +43,7 @@ class ProductReviewAnalyzerTest {
 
     @Test
     void frequencyMapCountsCorrectly() {
-        TreeMap<String, Long> map = new ProductReviewAnalyzer(sampleTags()).buildCategoryFrequencyMap();
+        Map<String, Long> map = new ProductReviewAnalyzer(sampleTags()).buildCategoryFrequencyMap();
         assertEquals(3L, map.get("electronics"));
         assertEquals(2L, map.get("books"));
         assertEquals(1L, map.get("clothing"));
@@ -55,7 +52,7 @@ class ProductReviewAnalyzerTest {
 
     @Test
     void frequencyMapIsSortedAlphabetically() {
-        TreeMap<String, Long> map = new ProductReviewAnalyzer(sampleTags()).buildCategoryFrequencyMap();
+        Map<String, Long> map = new ProductReviewAnalyzer(sampleTags()).buildCategoryFrequencyMap();
         List<String> keys = new ArrayList<>(map.keySet());
         assertEquals("audio",       keys.get(0));
         assertEquals("books",       keys.get(1));

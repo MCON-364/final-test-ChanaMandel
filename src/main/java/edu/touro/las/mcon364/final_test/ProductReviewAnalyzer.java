@@ -4,24 +4,12 @@ import java.util.*;
 import java.util.stream.*;
 
 /**
- * Test Item - Product Review Analyzer (TreeMap + Streams + NavigableMap)
+ * Product Review Analyzer
  *
  * Scenario: an e-commerce platform collects customer reviews. Each review
  * contains a product category tag (e.g., "electronics", "books", "clothing").
  * You need to count how many reviews each category has received and then
  * answer several questions about those counts — all in sorted order.
- *
- * This exercise practises:
- * - Why TreeMap gives us sorted-key iteration for free.
- * - How Collectors.groupingBy + Collectors.counting builds a frequency map.
- * - How NavigableMap operations (subMap, headMap, tailMap) let us slice the
- *   sorted map without iterating manually.
- * - How a stream pipeline can rank or filter the frequency entries.
- *
- * Before coding, think about:
- * - If we used HashMap instead of TreeMap, which methods would break, and why?
- * - What is the difference between subMap(from, to) and subMap(from, true, to, true)?
- * - Should getTopNCategories return categories with the highest count or lowest?
  *
  * Requirements:
  * - The constructor receives the list of category tags to analyze.
@@ -39,18 +27,16 @@ import java.util.stream.*;
  */
 public class ProductReviewAnalyzer {
 
-    private final List<String> categories;
+    //TODO - uncomment this field and initialize it in the constructor to store categories.
+    //private final List<String> categories;
 
     /**
      * Store the category tags that this analyzer will examine.
-     *
-     * Think carefully:
-     * - What should happen if null is passed?
-     * - Should this class keep the original list reference or store a defensive copy?
+     * Constructor should make a defensive copy of the list to prevent external modification of the internal state of this class.
+     * If the input list is null, throw an IllegalArgumentException.
      */
     public ProductReviewAnalyzer(List<String> categories) {
-        if (categories == null) throw new IllegalArgumentException("categories must not be null");
-        this.categories = List.copyOf(categories);
+      //TODO - implement this constructor
     }
 
     /**
@@ -59,9 +45,9 @@ public class ProductReviewAnalyzer {
      *
      * @return sorted frequency map
      */
-    public TreeMap<String, Long> buildCategoryFrequencyMap() {
-        return categories.stream()
-                .collect(Collectors.groupingBy(c -> c, TreeMap::new, Collectors.counting()));
+    public Map<String, Long> buildCategoryFrequencyMap() {
+        //TODO - implementthis method
+        return null;
     }
 
     /**
@@ -71,11 +57,8 @@ public class ProductReviewAnalyzer {
      * @return list of category names, most reviewed first
      */
     public List<String> getTopNCategories(int n) {
-        return buildCategoryFrequencyMap().entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(n)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        //TODO - implement this method
+        return null;
     }
 
     /**
@@ -88,11 +71,8 @@ public class ProductReviewAnalyzer {
      * @return sorted list of matching category names
      */
     public List<String> getCategoriesStartingWith(char prefix) {
-        String from = String.valueOf(prefix);
-        String to   = String.valueOf((char) (prefix + 1));
-        return new ArrayList<>(buildCategoryFrequencyMap()
-                .subMap(from, true, to, false)
-                .navigableKeySet());
+        //TODO - implement this method
+        return null;
     }
 
     /**
@@ -106,10 +86,7 @@ public class ProductReviewAnalyzer {
      * @return Optional containing the most reviewed category in range, or empty if none
      */
     public Optional<String> getMostReviewedInRange(String from, String to) {
-        return buildCategoryFrequencyMap()
-                .subMap(from, true, to, true)
-                .entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey);
+        //TODO - implement this method
+        return Optional.empty();
     }
 }
