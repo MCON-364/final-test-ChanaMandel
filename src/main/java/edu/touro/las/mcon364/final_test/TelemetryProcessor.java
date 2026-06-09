@@ -1,6 +1,12 @@
 package edu.touro.las.mcon364.final_test;
 
+import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TelemetryProcessor – concurrent sensor-data pipeline
@@ -32,7 +38,12 @@ import java.util.DoubleSummaryStatistics;
 public class TelemetryProcessor {
 
     // ── declare whatever fields you need ─────────────────────────────────────
-
+    private final BlockingQueue<TelemetryEvent> queue = new LinkedBlockingQueue<>();
+    private final List<Thread> workers = new ArrayList<>();
+    private volatile boolean running = false;
+    private final AtomicInteger counter = new AtomicInteger(0);
+    private final DoubleSummaryStatistics stats = new DoubleSummaryStatistics();
+    private final Object statsLock = new Object();
     // ── public API ────────────────────────────────────────────────────────────
 
     /**
@@ -45,6 +56,19 @@ public class TelemetryProcessor {
      */
     public void submit(TelemetryEvent event) {
         //TODO - implement this method
+        if(event == null){
+            throw new IllegalArgumentException("event can't be null");
+        }
+
+        if(!running){
+            throw new IllegalStateException("TelemetryProcessor has been closed");
+        }
+
+        try {
+            queue.put(event);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -54,6 +78,20 @@ public class TelemetryProcessor {
      */
     public void start(int workerCount) {
         //TODO - implement this method
+        if(workerCount <= 0){
+            throw new IllegalArgumentException("workerCount can't be less than 0");
+        }
+
+        if(running){
+            throw new IllegalStateException("TelemetryProcessor already running");
+        }
+
+        running = true;
+        for(int i = 0; i < workerCount; i++){
+            Thread worker = new Thread(this::workerLoop);
+            workers.add(worker);
+            worker.start();
+        }
     }
 
     /**
@@ -62,6 +100,11 @@ public class TelemetryProcessor {
      */
     public void stop() throws InterruptedException {
         //TODO - implement this method
+        running = false;
+        for(Thread worker : workers){
+            worker.join();
+        }
+        workers.clear();
     }
 
     /**
@@ -69,7 +112,7 @@ public class TelemetryProcessor {
      */
     public int getTotalProcessed() {
         //TODO - implement this method
-        return 0;
+        return counter.get();
     }
 
     /**
@@ -82,6 +125,27 @@ public class TelemetryProcessor {
      */
     public DoubleSummaryStatistics getStats() {
         //TODO - implement this method
-        return null;
+        synchronized (statsLock) {
+            DoubleSummaryStatistics snapshot = new DoubleSummaryStatistics();
+            snapshot.combine(stats);
+            return snapshot;
+        }
+
     }
+
+    private void workerLoop(){
+        while(running || !queue.isEmpty()){
+            TelemetryEvent event = queue.poll();
+
+            if(event != null){
+               counter.incrementAndGet();
+
+               synchronized (statsLock) {
+                   stats.accept(event.metric());
+               }
+            }
+        }
+    }
+
+
 }
