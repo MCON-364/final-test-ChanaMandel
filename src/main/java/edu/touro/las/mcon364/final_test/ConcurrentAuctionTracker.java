@@ -30,9 +30,9 @@ public class ConcurrentAuctionTracker {
 
     //TODO - Initialize thread-safe sorted Set implementation to store bids in descending order by amount.
     //Uncomment line below and choose the appropriate concurrent collection to store BidEntry objects sorted by amount.
-    //private final Set<BidEntry> bids;
+    private final Set<BidEntry> bids = new ConcurrentSkipListSet<>();
     //TODO - Initialize a thread-safe counter to track total bid submissions and call it totalBids.
-
+    private final AtomicInteger totalBids = new AtomicInteger(0);
 
     /**
      * Adds a bid entry to the tracker thread-safely and increments the counter.
@@ -41,6 +41,9 @@ public class ConcurrentAuctionTracker {
      */
     public void submitBid(BidEntry entry) {
         //TODO - implement this method
+        totalBids.getAndIncrement();
+        bids.add(entry);
+
     }
 
     /**
@@ -51,6 +54,11 @@ public class ConcurrentAuctionTracker {
      */
     public List<BidEntry> getTopN(int n) {
         //TODO - implement this method
+        if (n <= 0) {
+            return List.of();
+        }
+
+        //return bids.
         return null;
     }
 
@@ -59,7 +67,7 @@ public class ConcurrentAuctionTracker {
      */
     public int getTotalBids() {
         //TODO - implement this method
-        return 0;
+        return totalBids.get();
     }
 
     /**
@@ -74,6 +82,17 @@ public class ConcurrentAuctionTracker {
     public void runSimulation(List<String> bidders, int bidsEach)
             throws InterruptedException {
         //TODO - implement this method
+        ExecutorService executor = Executors.newFixedThreadPool(bidders.size());
+        bidders.forEach(bidder -> executor.submit(() -> {
+            for (int i = 0; i < bidsEach; i++) {
+                Random val = new Random(1- 100);
+                long currentTime = System.currentTimeMillis();
+                submitBid(new BidEntry(bidder, val.nextInt(), currentTime));
+            }
+        }));
+
+        executor.shutdown();
+        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     }
 }
 
